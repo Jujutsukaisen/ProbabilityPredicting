@@ -27,12 +27,11 @@ To select real hardworking workers, the skills before and after the course will 
 
 ## Functions:
 
-- Log in to the system;
-- Nine-digit ids for each student;
+- Log in to the application;
+- Unique ids for each candidate;
 - The application language is English;
-- The application should allow the user to fill in student results;
-- The application should show the level of experience gained when the manager requests;
-- If the manager has forgotten the password for his account, he can fill in other data and restore them. 
+- The application should allow the user to fill in candidate results;
+- The application should show the level of experience gained when the manager requests.
 
 ## UI Type:
 
