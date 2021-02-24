@@ -11,3 +11,8 @@
 * Do these roles require a certain gender priority?
 * Which companies have good staff?
 * What roles are currently in demand?
+* Which companies hire good employees?
+* Which cities' companies provide good services?
+* Can the ability to surpass the hard work?
+## Functionalities and features
+* We will complement this section along with writing queries
