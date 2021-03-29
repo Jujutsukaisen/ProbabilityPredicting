@@ -50,6 +50,9 @@ CREATE TABLE education
  ON DELETE CASCADE
  ); 
  
+ UPDATE education SET university_id = NULL WHERE education_level = 'Primary School';
+ UPDATE education SET university_id = NULL WHERE education_level = 'High School';
+ 
  CREATE TABLE experience 
  ( 
  enrolle_id NUMBER, 
