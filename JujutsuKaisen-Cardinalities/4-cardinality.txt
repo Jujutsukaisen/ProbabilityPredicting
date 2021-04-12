@@ -1,0 +1,23 @@
+--query preparation 
+SELECT COUNT(*)
+FROM positions, trainee, experience
+WHERE experience.training_hours >= 316 
+AND positions.position_id = trainee.position_id
+AND trainee.enrolle_id = experience.enrolle_id;
+
+--execution plans
+SELECT COUNT(*) 
+FROM experience JOIN (positions JOIN trainee ON positions.position_id = trainee.position_id)
+ON experience.enrolle_id = trainee.enrolle_id AND experience.training_hours >= 316;
+--|T'| = 19158 + 115 = 19273
+
+SELECT COUNT(*)
+FROM positions JOIN (experience JOIN trainee ON experience.enrolle_id = trainee.enrolle_id
+AND experience.training_hours >= 316) ON positions.position_id = trainee.position_id;
+--|T'| = 115 + 115 = 230
+--fastest plan, since there fewer rows to scan and filter
+
+SELECT COUNT(*) 
+FROM positions JOIN (trainee JOIN experience ON trainee.enrolle_id = experience.enrolle_id)
+ON positions.position_id = trainee.position_id AND experience.training_hours >= 316;
+--|T'| = 19158 + 115 = 19273

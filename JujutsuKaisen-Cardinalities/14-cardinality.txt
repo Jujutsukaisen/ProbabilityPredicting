@@ -1,0 +1,27 @@
+--query preparation 
+SELECT COUNT(*) 
+FROM company, experience, trainee
+WHERE experience.target = 1.0 
+AND experience.relevant_experience = 'Has relevent experience'
+AND company.company_id = experience.company_id
+AND experience.enrolle_id = trainee.enrolle_id;
+
+--execution plans
+SELECT COUNT(*) 
+FROM trainee JOIN (experience JOIN company ON experience.company_id = company.company_id
+AND experience.target = 1.0  AND experience.relevant_experience = 'Has relevent experience')
+ON trainee.enrolle_id = experience.enrolle_id;
+--|T'| = 2956 + 2956 = 5912
+--fastest plan, since there fewer rows to scan and filter
+
+SELECT COUNT(*)
+FROM company JOIN (experience JOIN trainee ON experience.enrolle_id = trainee.enrolle_id
+AND experience.target = 1.0  AND experience.relevant_experience = 'Has relevent experience')
+ON company.company_id = experience.company_id;
+--|T'| = 2961 + 2956 = 5917
+
+SELECT COUNT(*) 
+FROM trainee JOIN (company JOIN experience ON company.company_id = experience.company_id)
+ON trainee.enrolle_id = experience.enrolle_id AND experience.target = 1.0  
+AND experience.relevant_experience = 'Has relevent experience';
+--|T'| = 19134 + 2956 = 22090

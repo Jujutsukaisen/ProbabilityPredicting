@@ -1,0 +1,32 @@
+--query preparation
+SELECT COUNT(*)
+FROM company, experience, trainee, education, university, city
+WHERE university.university_ranking = 1
+AND company.company_id = experience.company_id
+AND experience.enrolle_id = trainee.enrolle_id
+AND trainee.enrolle_id = education.enrolle_id
+AND education.university_id = university.university_id
+AND trainee.city_id = city.city_id;
+
+--execution plans
+SELECT COUNT(*) 
+FROM city JOIN (university JOIN (education JOIN (trainee JOIN (company JOIN experience 
+ON company.company_id = experience.company_id) ON trainee.enrolle_id = experience.enrolle_id)
+ON education.enrolle_id = trainee.enrolle_id) ON university.university_id = education.university_id
+AND university.university_ranking = 1) ON city.city_id = trainee.city_id;
+--|T'| = 19134 + 19134 + 19134 + 14 + 14 = 57430
+
+SELECT COUNT(*)
+FROM company JOIN (experience JOIN (city JOIN (trainee JOIN (education JOIN university 
+ON education.university_id = university.university_id AND university.university_ranking = 1) 
+ON trainee.enrolle_id = education.enrolle_id) ON city.city_id = trainee.city_id)
+ON experience.enrolle_id = trainee.enrolle_id) ON company.company_id = experience.company_id;
+--|T'| = 14 + 14 + 14 + 14 + 14 = 70
+--fastest plan, since there fewer rows to scan and filter
+
+SELECT COUNT(*)
+FROM company JOIN (experience JOIN (university JOIN (education JOIN (trainee JOIN city 
+ON trainee.city_id = city.city_id) ON trainee.enrolle_id = education.enrolle_id) 
+ON university.university_id = education.university_id AND university.university_ranking = 1)
+ON experience.enrolle_id = trainee.enrolle_id) ON company.company_id = experience.company_id;
+--|T'| = 19158 + 19158 + 14 + 14 + 14 = 38358

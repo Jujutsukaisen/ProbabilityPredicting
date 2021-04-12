@@ -1,0 +1,36 @@
+--query preparation
+SELECT COUNT(*)
+FROM university, education, trainee, experience, company, positions, groupings
+WHERE experience.training_hours > 300 AND company.company_size > 1000
+AND university.university_id = education.university_id
+AND education.enrolle_id = trainee.enrolle_id
+AND trainee.enrolle_id = experience.enrolle_id
+AND experience.company_id = company.company_id
+AND trainee.position_id = positions.position_id
+AND trainee.group_id = groupings.group_id;
+
+--execution plans
+SELECT COUNT(*) 
+FROM university JOIN (education JOIN (groupings JOIN (positions JOIN (trainee JOIN (experience JOIN company 
+ON experience.company_id = company.company_id AND experience.training_hours > 300 AND company.company_size > 1000)
+ON trainee.enrolle_id = experience.enrolle_id) ON trainee.position_id = positions.position_id) 
+ON trainee.group_id = groupings.group_id) ON education.enrolle_id = trainee.enrolle_id)
+ON university.university_id = education.university_id;
+--|T'| = 1 + 1 + 1 + 1 + 1 + 1 = 6
+--fastest plan, since there fewer rows to scan and filter
+
+SELECT COUNT(*)
+FROM university JOIN (education JOIN (company JOIN (experience JOIN (positions JOIN (trainee JOIN groupings 
+ON trainee.group_id = groupings.group_id) ON trainee.position_id = positions.position_id) 
+ON experience.enrolle_id = trainee.enrolle_id AND experience.training_hours > 300) 
+ON company.company_id = experience.company_id AND company.company_size > 1000) 
+ON education.enrolle_id = trainee.enrolle_id) ON university.university_id = education.university_id;
+--|T'| = 19158 + 19158 + 198 + 1 + 1 + 1 = 38517
+
+SELECT COUNT(*)
+FROM company JOIN (experience JOIN (positions JOIN (groupings JOIN (trainee JOIN (university JOIN education
+ON university.university_id = education.university_id) ON trainee.enrolle_id = education.enrolle_id)
+ON groupings.group_id = trainee.group_id) ON positions.position_id = trainee.position_id) 
+ON experience.enrolle_id = trainee.enrolle_id AND experience.training_hours > 300) 
+ON company.company_id = experience.company_id AND company.company_size > 1000;
+--|T'| = 16833 + 16833 + 16833 + 16833 + 177 + 1 = 67510

@@ -1,0 +1,35 @@
+--query preparation
+SELECT COUNT(*)
+FROM company, experience, trainee, education, university
+WHERE experience.last_new_job != 0 AND experience.training_hours > 300
+AND experience.target = 1.0 AND university.university_ranking BETWEEN 1 AND 200
+AND company.company_id = experience.company_id
+AND experience.enrolle_id = trainee.enrolle_id
+AND trainee.enrolle_id = education.enrolle_id
+AND education.university_id = university.university_id;
+
+--execution plans
+SELECT COUNT(*)
+FROM company JOIN (university JOIN (education JOIN (experience JOIN trainee 
+ON experience.enrolle_id = trainee.enrolle_id AND experience.last_new_job != 0 AND experience.training_hours > 300
+AND experience.target = 1.0) ON education.enrolle_id = trainee.enrolle_id) 
+ON university.university_id = education.university_id AND university.university_ranking BETWEEN 1 AND 200) 
+ON company.company_id = experience.company_id;
+--|T'| = 31 + 31 + 4 + 4 = 70
+--fastest plan, since there fewer rows to scan and filter
+
+SELECT COUNT(*)
+FROM company JOIN (experience JOIN (trainee JOIN (education JOIN university 
+ON education.university_id = university.university_id AND university.university_ranking BETWEEN 1 AND 200)
+ON trainee.enrolle_id = education.enrolle_id) ON experience.enrolle_id = trainee.enrolle_id
+AND experience.last_new_job != 0 AND experience.training_hours > 300 AND experience.target = 1.0) 
+ON company.company_id = experience.company_id;
+--|T'| = 3329 + 3329 + 4 + 4 = 6666
+
+SELECT COUNT(*)
+FROM university JOIN (education JOIN (trainee JOIN (company JOIN experience 
+ON company.company_id = experience.company_id AND experience.last_new_job != 0 AND experience.training_hours > 300
+AND experience.target = 1.0) ON trainee.enrolle_id = experience.enrolle_id) 
+ON education.enrolle_id = trainee.enrolle_id) ON university.university_id = education.university_id
+AND university.university_ranking BETWEEN 1 AND 200;
+--|T'| = 31 + 31 + 31 + 4 = 97
