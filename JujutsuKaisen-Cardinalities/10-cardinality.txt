@@ -1,0 +1,28 @@
+--We had to change the source code a little, as it could not be put in "Query preparation" format
+--query preparation
+SELECT COUNT(*)
+FROM positions, trainee, education, university
+WHERE trainee.gender = 'Male' AND university.university_name = 'Wake Forest University'
+AND positions.position_id = trainee.position_id
+AND trainee.enrolle_id = education.enrolle_id
+AND education.university_id = university.university_id
+
+--execution plans
+SELECT COUNT(*) 
+FROM positions JOIN (trainee JOIN (education JOIN university ON education.university_id = university.university_id 
+AND university.university_name = 'Wake Forest University') ON trainee.enrolle_id = education.enrolle_id 
+AND trainee.gender = 'Male') ON positions.position_id = trainee.position_id;
+--|T'| = 15 + 9 + 9 = 33
+--fastest plan, since there fewer rows to scan and filter
+
+SELECT COUNT(*) 
+FROM university JOIN (education JOIN (positions JOIN trainee ON positions.position_id = trainee.position_id
+AND trainee.gender = 'Male') ON education.enrolle_id = trainee.enrolle_id) 
+ON university.university_id = education.university_id AND university.university_name = 'Wake Forest University';
+--|T'| = 13221 + 13221 + 9 = 26451
+
+SELECT COUNT(*) 
+FROM positions JOIN (university JOIN (trainee JOIN education ON trainee.enrolle_id = education.enrolle_id 
+AND trainee.gender = 'Male') ON university.university_id = education.university_id 
+AND university.university_name = 'Wake Forest University') ON positions.position_id = trainee.position_id;
+--|T'| = 13221 + 9 + 9 = 13239

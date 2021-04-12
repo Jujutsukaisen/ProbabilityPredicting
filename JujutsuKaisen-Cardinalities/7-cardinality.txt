@@ -1,0 +1,28 @@
+--We had to change the source code a little, as it could not be put in "Query preparation" format
+--query preparation
+SELECT COUNT(*) 
+FROM city, trainee, experience, company 
+WHERE city.city_development = 0.92 AND company.company_country = 'france'
+AND city.city_id = trainee.city_id 
+AND trainee.enrolle_id = experience.enrolle_id
+AND experience.company_id = company.company_id;
+
+--execution plans
+SELECT COUNT(*)
+FROM city JOIN (trainee JOIN (experience JOIN company ON experience.company_id = company.company_id
+AND company.company_country = 'france') ON trainee.enrolle_id = experience.enrolle_id) 
+ON city.city_id = trainee.city_id AND city.city_development = 0.92;
+--|T'| = 446 + 446 + 111 = 1003
+--fastest plan, since there fewer rows to scan and filter
+
+SELECT COUNT(*)
+FROM company JOIN (experience JOIN (city JOIN  trainee ON city.city_id = trainee.city_id 
+AND city.city_development = 0.92) ON experience.enrolle_id = trainee.enrolle_id) 
+ON company.company_id = experience.company_id AND company.company_country = 'france';
+--|T'| = 5200 + 5200 + 111 = 10511
+
+SELECT COUNT(*)
+FROM city JOIN (company JOIN (trainee JOIN experience ON trainee.enrolle_id = experience.enrolle_id)
+ON company.company_id = experience.company_id AND company.company_country = 'france') 
+ON city.city_id = trainee.city_id AND city.city_development = 0.92; 
+--|T'| = 19158 + 446 + 111 = 19715
